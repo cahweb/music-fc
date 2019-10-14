@@ -1,0 +1,22 @@
+#header-menu {
+    align-items: stretch;
+    height: 100%;
+}
+
+#main-title {
+    background-color: rgba(255, 204, 0, .8);
+}
+
+.option-box {
+    background-color: rgba(255, 255, 255, .75);
+}
+
+body {
+    background-image: url('../../img/front_splash.jpg');
+}
+
+@media (min-width: 1200px) {
+    body {
+        background-size: cover;
+    }
+}

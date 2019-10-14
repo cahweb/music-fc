@@ -17,7 +17,7 @@ require_once 'includes/functions.php';
     <link rel="stylesheet" href="lib/athena/css/framework.min.css">
 
     <!-- Site CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="static/css/style.min.css">
 
 </head>
 <body>
