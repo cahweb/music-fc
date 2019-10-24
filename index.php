@@ -1,11 +1,19 @@
 <?php
+require_once 'init.php';
+require_once 'includes/music-fc-helper.php';
+require_once 'includes/music-fc-query-ref.php';
 
-$title = "UCF Music | Card Scanner";
-$address = "http://localhost:8080/musicfc";
+use MusicQueryRef as MQEnum;
+
+define( 'CURRENT_PAGE', basename( __FILE__ ) );
 
 require_once 'header.php';
 
 session_start();
+require_once "lib/adLDAP/lib/adLDAP/adLDAP.php";
+
+if( is_null( $mfhelp->get_adLDAP() ) ) exit( "Couldn't instantiate authenticator." );
+
 
 if( isset( $SESSION[ 'event' ] ) )
     if( $_SESSION[ 'event' ] != '' )
@@ -15,10 +23,50 @@ if( isset( $_SESSION[ 'email' ] ) )
     if( $_SESSION[ 'email' ] != '' )
         $_SESSION[ 'email' ] = '';
 
-//$_SESSION[ 'username' ] = "Test User";
+if( (isset( $_POST['nid'] ) && $_POST['nid'] != '' ) && ( isset( $_POST['pw'] ) && $_POST['pw'] != '' ) ) {
+    $email = $mfhelp->scrub( $_POST['nid'] );
+    $pass  = $mfhelp->scrub( $_POST['pw'] );
+    $authorized = FALSE;
+
+    $result = $mfhelp->query( MQEnum::LOGIN_BASE, $email, $pass );
+
+    if( is_null( $result ) || $result->num_rows < 1 ) {
+        if( $mfhelp->get_adLDAP() != NULL ) {
+            if( $mfhelp->get_adLDAP()->authenticate( $email, $pass ) ) {
+
+                $result_email = $mfhelp->query( MQEnum::LOGIN_ADLDAP, $email );
+
+                if( $result_email === FALSE || $result_email->num_rows < 1 ) {
+                    echo "Invalid Login.";
+                    echo "<meta http-equiv=\"REFRESH\" content=\"1;url=$address\">";
+                }
+                else {
+
+                    $row_email = mysqli_fetch_assoc( $result_email );
+
+                    //echo "Your login information has been verified.";
+                    $_SESSION['email'] = $row_email['email'];
+                    $_SESSION['username'] = $row_email['username'];
+                }
+            }
+            else {
+                echo "Invalid Login";
+            }
+        }
+        else {
+            echo "Invalid Login";
+        }
+    }
+    else {
+        $row = mysqli_fetch_assoc( $result );
+        echo "Your login information has been verified.";
+        $_SESSION['email'] = $email;
+        $_SESSION['username'] = $row['username'];
+    }
+}
 
 
-if( !isset( $_SESSION[ 'username' ] ) || empty( $_SESSION[ 'username' ] ) ) {
+if( !isset( $_SESSION['username'] ) || empty( $_SESSION['username'] ) ) {
 ?>
     <div id="main" class="container mt-5">
         <div class="row justify-content-center">
@@ -30,7 +78,7 @@ if( !isset( $_SESSION[ 'username' ] ) || empty( $_SESSION[ 'username' ] ) ) {
         </div>
         <div class="row justify-content-center">
             <div class="col-8 col-md-6 col-lg-4 bg-faded p-3 option-box">
-                <form>
+                <form action="index.php" method="post">
                     <div class="form-group">
                         <label for="nid">NID</label>
                         <input type="text" class="form-control" id="nid" name="nid" aria-describedby="nidHelp" placeholder="Enter NID">
@@ -57,19 +105,19 @@ if( !isset( $_SESSION[ 'username' ] ) || empty( $_SESSION[ 'username' ] ) ) {
                 <h1 class="text-secondary text-center font-condensed mb-3">Music Forum Credit</h1>
                 <h4 class="heading-underline text-secondary text-center font-slab-serif mb-4">Welcome, <?= $_SESSION[ 'username' ] ?>!</h4>
                 <p class="lead text-secondary mb-1">Please select an option:</p>
-                <div class="list-group">
+                <div class="list-group mb-3">
                     <a href="swipe.php" class="list-group-item list-group-item-action">Start Event Swipe</a>
                     <a href="events.php" class="list-group-item list-group-item-action">Manage Events</a>
                     <a href="admin.php" class="list-group-item list-group-item-action">Admin Tools</a>
                 </div>
+                <a href="logout.php">
+                    <button type="button" class="btn btn-primary" id="logout-button">Logout</button>
+                </a>
             </div>
         </div>
     </div>
     <?php
 }
-
-if( isset( $_SESSION[ 'username' ] ) )
-    unset( $_SESSION[ 'username' ] );
 
 require_once 'footer.php';
 ?>

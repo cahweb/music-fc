@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/functions.php';
+require_once 'init.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,10 +21,10 @@ require_once 'includes/functions.php';
 
 </head>
 <body>
-<?php
-$mfhelp = new MusicFunctionHelper();
-?>
-
+    
+    <div class="container-fluid media-background-container">
+    
+    <img class="media-background object-fit-cover filter-blur" src="img/front_splash.jpg">
     <nav class="navbar navbar-inverse navbar-toggleable-md bg-default">
         <div class="container flex-row justify-content-between">
             <a href="<?= $address ?>" class="navbar-brand mh-100">

@@ -2,7 +2,7 @@
   "name": "musicfc",
   "version": "2.0.0",
   "description": "An application for UCF Music faculty to manage students signing in to extracurricular performances.",
-  "main": "index.js",
+  "main": "index.php",
   "directories": {
     "lib": "lib"
   },
@@ -23,6 +23,7 @@
     "gulp-rename": "^1.4.0",
     "gulp-sass": "^4.0.2",
     "gulp-terser": "^1.2.0",
+    "merge-stream": "^2.0.0",
     "ucf-athena-framework": "^1.0.6"
   }
 }

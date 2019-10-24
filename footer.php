@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/functions.php';
+require_once 'init.php';
 ?>
     <div class="container-fluid fixed-bottom">
         <div class="row">
@@ -23,8 +23,15 @@ require_once 'includes/functions.php';
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.3/js/tether.min.js" integrity="sha256-mIiWebTG82x+OcV3vUA49ffGDIAJ53uC9jflw5/+REs=" crossorigin="anonymous"></script>
     <script src="lib/athena/js/framework.min.js"></script>
 
+    <?php if( CURRENT_PAGE == 'events.php' ) : ?>
+    <script src="static/js/events.min.js"></script>
+    <?php endif; ?>
+
+    </div>
+    </div>
+
 <?php
-unset( $mfchelp );
+unset( $mfhelp );
 ?>
 </body>
 </html>
