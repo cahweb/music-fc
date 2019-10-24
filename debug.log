@@ -1595,3 +1595,41 @@ Stack trace:
 #1 C:\wamp64\www\musicfc\events.php(16): MusicFCHelper->query(4)
 #2 {main}
   thrown in C:\wamp64\www\musicfc\includes\music-fc-helper.php on line 61
+[24-Oct-2019 22:41:21 UTC] PHP Warning:  mysqli_connect(): (HY000/2002): A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+ in C:\wamp64\www\musicfc\includes\music-fc-helper.php on line 57
+[24-Oct-2019 22:41:21 UTC] PHP Stack trace:
+[24-Oct-2019 22:41:21 UTC] PHP   1. {main}() C:\wamp64\www\musicfc\events.php:0
+[24-Oct-2019 22:41:21 UTC] PHP   2. MusicFCHelper->query() C:\wamp64\www\musicfc\events.php:16
+[24-Oct-2019 22:41:21 UTC] PHP   3. MusicFCHelper->get_db() C:\wamp64\www\musicfc\includes\music-fc-helper.php:78
+[24-Oct-2019 22:41:21 UTC] PHP   4. mysqli_connect() C:\wamp64\www\musicfc\includes\music-fc-helper.php:57
+[24-Oct-2019 22:41:21 UTC] PHP Warning:  mysqli_set_charset() expects parameter 1 to be mysqli, boolean given in C:\wamp64\www\musicfc\includes\music-fc-helper.php on line 58
+[24-Oct-2019 22:41:21 UTC] PHP Stack trace:
+[24-Oct-2019 22:41:21 UTC] PHP   1. {main}() C:\wamp64\www\musicfc\events.php:0
+[24-Oct-2019 22:41:21 UTC] PHP   2. MusicFCHelper->query() C:\wamp64\www\musicfc\events.php:16
+[24-Oct-2019 22:41:21 UTC] PHP   3. MusicFCHelper->get_db() C:\wamp64\www\musicfc\includes\music-fc-helper.php:78
+[24-Oct-2019 22:41:21 UTC] PHP   4. mysqli_set_charset() C:\wamp64\www\musicfc\includes\music-fc-helper.php:58
+[24-Oct-2019 22:41:21 UTC] PHP Fatal error:  Uncaught TypeError: Return value of MusicFCHelper::get_db() must be an instance of mysqli, boolean returned in C:\wamp64\www\musicfc\includes\music-fc-helper.php:61
+Stack trace:
+#0 C:\wamp64\www\musicfc\includes\music-fc-helper.php(78): MusicFCHelper->get_db()
+#1 C:\wamp64\www\musicfc\events.php(16): MusicFCHelper->query(4)
+#2 {main}
+  thrown in C:\wamp64\www\musicfc\includes\music-fc-helper.php on line 61
+[24-Oct-2019 23:02:06 UTC] PHP Warning:  mysqli_connect(): (HY000/2002): A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+ in C:\wamp64\www\musicfc\includes\music-fc-helper.php on line 57
+[24-Oct-2019 23:02:06 UTC] PHP Stack trace:
+[24-Oct-2019 23:02:06 UTC] PHP   1. {main}() C:\wamp64\www\musicfc\events.php:0
+[24-Oct-2019 23:02:06 UTC] PHP   2. MusicFCHelper->query() C:\wamp64\www\musicfc\events.php:16
+[24-Oct-2019 23:02:06 UTC] PHP   3. MusicFCHelper->get_db() C:\wamp64\www\musicfc\includes\music-fc-helper.php:78
+[24-Oct-2019 23:02:06 UTC] PHP   4. mysqli_connect() C:\wamp64\www\musicfc\includes\music-fc-helper.php:57
+[24-Oct-2019 23:02:06 UTC] PHP Warning:  mysqli_set_charset() expects parameter 1 to be mysqli, boolean given in C:\wamp64\www\musicfc\includes\music-fc-helper.php on line 58
+[24-Oct-2019 23:02:06 UTC] PHP Stack trace:
+[24-Oct-2019 23:02:06 UTC] PHP   1. {main}() C:\wamp64\www\musicfc\events.php:0
+[24-Oct-2019 23:02:06 UTC] PHP   2. MusicFCHelper->query() C:\wamp64\www\musicfc\events.php:16
+[24-Oct-2019 23:02:06 UTC] PHP   3. MusicFCHelper->get_db() C:\wamp64\www\musicfc\includes\music-fc-helper.php:78
+[24-Oct-2019 23:02:06 UTC] PHP   4. mysqli_set_charset() C:\wamp64\www\musicfc\includes\music-fc-helper.php:58
+[24-Oct-2019 23:02:06 UTC] PHP Fatal error:  Uncaught TypeError: Return value of MusicFCHelper::get_db() must be an instance of mysqli, boolean returned in C:\wamp64\www\musicfc\includes\music-fc-helper.php:61
+Stack trace:
+#0 C:\wamp64\www\musicfc\includes\music-fc-helper.php(78): MusicFCHelper->get_db()
+#1 C:\wamp64\www\musicfc\events.php(16): MusicFCHelper->query(4)
+#2 {main}
+  thrown in C:\wamp64\www\musicfc\includes\music-fc-helper.php on line 61
