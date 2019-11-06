@@ -23,12 +23,22 @@ require_once 'init.php';
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.3/js/tether.min.js" integrity="sha256-mIiWebTG82x+OcV3vUA49ffGDIAJ53uC9jflw5/+REs=" crossorigin="anonymous"></script>
     <script src="lib/athena/js/framework.min.js"></script>
 
+    </div>
+    </div>
+
     <?php if( CURRENT_PAGE == 'events.php' ) : ?>
     <script src="static/js/events.min.js"></script>
-    <?php endif; ?>
+    <?php require_once 'views/modal-add-new.php'; ?>
+    
+    <?php elseif( CURRENT_PAGE == 'swipe.php' ) : ?>
+    <script src="static/js/swipe.min.js"></script>
 
-    </div>
-    </div>
+    <?php elseif( CURRENT_PAGE == 'admin.php' ) : ?>
+    <script src="src/js/admin.js"></script>
+    <?php require_once 'views/modal-add-student-entry.php'; ?>
+    <?php require_once 'views/modal-edit-admin.php'; ?>
+    <?php require_once 'views/modal-add-admin.php'; ?>
+    <?php endif; ?>
 
 <?php
 unset( $mfhelp );

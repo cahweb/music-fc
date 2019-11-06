@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if( !isset( $_SESSION['username'] ) || empty( $_SESSION['username'] ) )
+if( !isset( $_SESSION['username'] ) || empty( $_SESSION['username'] ) || $_SESSION['level'] > 2 )
     header( "Location: index.php" );
 
 require_once 'init.php';
@@ -32,6 +32,7 @@ $show_limit = 20;
 
 <input type="hidden" id="mysqlnd-qc-enable-switch" value="qc=on">
 <input type="hidden" id="limit" value="<?= $show_limit ?>">
+<input type="hidden" id="session-user" value="<?= $_SESSION['nid'] ?>">
 
 <div id="main" class="container mt-5">
     <div class="row justify-content-center">
@@ -41,9 +42,7 @@ $show_limit = 20;
             <p class="mb-4">
                 Viewing the existing events. <span id="start-idx">1</span>&ndash;<span id="end-idx"><?= $event_count > $show_limit ? $show_limit : $event_count ?></span> of <span id="event-count"><?= $event_count ?></span> events.
                 
-                <a href="addevent.php" class="float-right">
-                    <button type="button" class="mb-0 p-2 btn btn-outline-complementary float-right align-self-flex-start" id="add-btn">Add Event</button>
-                </a>
+                <button type="button" class="mb-0 p-2 btn btn-outline-complementary float-right align-self-flex-start" id="add-btn" data-toggle="modal" data-target="#new-event-modal">Add Event</button>
             </p>
 
             <table id="events-table" class="table table-striped table-hover table-responsive">
@@ -61,7 +60,7 @@ $show_limit = 20;
                 if( $result ) {
                     $dt_fmt = "Y-m-d H:i:s";
                     $d_fmt = "m/d/y";
-                    $t_fmt = "g:ia";
+                    $t_fmt = "g:i a";
                     while( $row = mysqli_fetch_assoc( $result ) ) {
                         $datetime = date_create_from_format( $dt_fmt, $row['startdate'] );
 
@@ -70,10 +69,10 @@ $show_limit = 20;
                     <tr>
                         <td><?= date_format( $datetime, $d_fmt ); ?></td>
                         <td colspan="3"><?= strtoupper( $row['title'] ); ?></td>
-                        <td><?= $time != "12:00am" ? $time : "TBA" ?></td>
+                        <td><?= $time != "12:00 am" ? $time : "TBA" ?></td>
                         <td colspan="2">
                             <div class="btn-group mx-auto">
-                                <button type="button" class="btn btn-outline-primary btn-sm edit-btn mr-2">Edit</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm edit-btn mr-2" data-toggle="modal" data-target="#new-event-modal">Edit</button>
                                 <button type="button" class="btn btn-outline-secondary btn-sm delete-btn">Delete</button>
                             </div>
                             <input type="hidden" class="event-meta" data-id="<?= $row['id'] ?>">

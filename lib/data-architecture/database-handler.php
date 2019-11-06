@@ -15,9 +15,9 @@ if( !interface_exists( 'DatabaseHandler' ) ) {
 
         public function close_db();
 
-        public function query( int $type, ... $args ) : ?mysqli_result;
+        public function query( int $type, ... $args );
 
-        public function validate( $result, string $sql ) : bool;
+        public function validate( $result, string $sql, int $type ) : bool;
     }
 }
 ?>

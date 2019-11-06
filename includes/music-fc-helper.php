@@ -71,20 +71,34 @@ if( !class_exists( 'MusicFCHelper' ) ) {
         }
 
 
-        public function query( int $type = MQEnum::MQ__DEFAULT, ... $args ) : ?mysqli_result {
+        public function query( int $type = MQEnum::MQ__DEFAULT, ... $args ) {
 
             $sql = $this->_get_query_lib()->get_query_str( $type, ... $args );
 
             $result = mysqli_query( $this->get_db(), $sql );
 
-            if( $this->validate( $result, $sql ) ) return $result;
+            if( $this->validate( $result, $sql, $type ) ) return $result;
             else return NULL;
         }
 
 
-        public function validate( $result, string $sql, $debug = TRUE ) : bool {
+        public function validate( $result, string $sql, int $type, $debug = TRUE ) : bool {
 
-            if( !$result ) {
+            if( $result instanceof mysqli_result ) {
+
+                if( $result->num_rows < 1 && $type != MQEnum::EVENT_LOC_CHECK) {
+                    if( $debug ) {
+                        $msg = "Query returned an empty set. Original query:\n\t$sql\n";
+                        error_log( $msg );
+                    }
+                    return FALSE;
+                }
+                else return TRUE;
+            }
+            else if( $result ) {
+                return TRUE;
+            }
+            else {
                 if( $debug ) {
                     $msg  = "There was an error with the SQL query.\n";
                     $msg .= mysqli_errno( $this->get_db() ) . ": " . mysqli_error( $this->get_db() ) . "\n";
@@ -97,14 +111,6 @@ if( !class_exists( 'MusicFCHelper' ) ) {
 
                 die( $msg );
             }
-            else if ( $result->num_rows < 1 ) {
-                if( $debug ) {
-                    $msg = "Query returned an empty set. Original query:\n\t$sql\n";
-                    error_log( $msg );
-                }
-                return FALSE;
-            }
-            else return TRUE;
         }
 
 
@@ -149,6 +155,111 @@ if( !class_exists( 'MusicFCHelper' ) ) {
         public function scrub( string $item ) : string {
 
             return mysqli_real_escape_string( $this->get_db(), htmlentities( trim( $item ) ) );
+        }
+
+
+        public function get_csv( bool $canvas = FALSE ) {
+
+            $output = fopen( 'php://output', 'w' );
+
+            $result = $this->query( MQEnum::CSV_NUM_COLS );
+
+            if( $result instanceof mysqli_result && $result->num_rows > 0 ) {
+                $row = mysqli_fetch_assoc( $result );
+
+                $num_cols = intval( $row['num_columns'] );
+
+                mysqli_free_result( $result );
+            }
+            else {
+                $num_cols = 0;
+            }
+
+            if( $num_cols > 0 ) {
+
+                $result = $this->query( MQEnum::CSV_LIST );
+
+                if( $result instanceof mysqli_result && $result->num_rows > 0 ) {
+
+                    if( $canvas ) {
+
+                        $headers = array(
+                            "Student",
+                            "ID",
+                            "SIS User ID",
+                            "SIS Login ID",
+                            "Section"
+                        );
+                    }
+                    else {
+
+                        $headers = array(
+                            "NID",
+                            "Name"
+                        );
+                    }
+
+                    for( $i = 1; $i <= $num_cols; $i++ ) {
+
+                        array_push( $headers, "Event $i" );
+                    }
+
+                    fputcsv( $output, $headers );
+
+                    if( $canvas ) {
+
+                        $points = array( "Points Possible", "", "" ,"", "" );
+
+                        for( $i = 0; $i < $num_cols; $i++ ) {
+                            array_push( $points, "1" );
+                        }
+
+                        fputcsv( $output, $points );
+                    }
+
+                    $curr_nid = "";
+                    $line = array();
+
+                    $num_rows = $result->num_rows;
+                    $counter = 0;
+                    while( $row = mysqli_fetch_assoc( $result ) ) {
+
+                        if( $row['nid'] != $curr_nid ) {
+                            $curr_nid = $row['nid'];
+
+                            if( !empty( $line ) ) {
+                                fputcsv( $output, $line );
+                            }
+
+                            $line = array();
+
+                            if( $canvas ) {
+                                array_push( $line, $row['student'],
+                                                   "",
+                                                   $row['pid'],
+                                                   $row['nid'],
+                                                   ""
+                                );
+                            }
+                            else {
+                                array_push( $line, $row['nid'], $row['student'] );
+                            }
+                        }
+
+                        array_push( $line, $row['title'] );
+
+                        if( ++$counter == $num_rows ) {
+                            fputcsv( $output, $line );
+                        }
+                    }
+
+                }
+            }
+            else {
+                fputcsv( $output, array("NO DATA") );
+            }
+
+            fclose( $output );
         }
 
 

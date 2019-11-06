@@ -20,6 +20,19 @@ if( !class_exists( 'MusicQueryRef' ) ) {
         const EVENT_DELETE = 6;
         const EVENT_DELETE_FC = 7;
         const EVENT_LOC_CHECK = 8;
+        const USER_ID_LOOKUP = 9;
+        const EVENT_EDIT = 10;
+        const EVENT_FC_ID = 11;
+        const SWIPE_LIST = 12;
+        const SWIPE_ADD = 13;
+        const ADMIN_GET_ALL = 14;
+        const ADMIN_CHECK = 15;
+        const ADMIN_GET_LEVELS = 16;
+        const ADMIN_CHG_PRIV = 17;
+        const ADMIN_ADD = 18;
+        const ADMIN_DELETE = 19;
+        const CSV_NUM_COLS = 20;
+        const CSV_LIST = 21;
     }
 }
 ?>

@@ -30,13 +30,13 @@ if( (isset( $_POST['nid'] ) && $_POST['nid'] != '' ) && ( isset( $_POST['pw'] ) 
 
     $result = $mfhelp->query( MQEnum::LOGIN_BASE, $email, $pass );
 
-    if( is_null( $result ) || $result->num_rows < 1 ) {
+    if( !$result || ( $result instanceof mysqli_result && $result->num_rows < 1 ) ) {
         if( $mfhelp->get_adLDAP() != NULL ) {
             if( $mfhelp->get_adLDAP()->authenticate( $email, $pass ) ) {
 
                 $result_email = $mfhelp->query( MQEnum::LOGIN_ADLDAP, $email );
 
-                if( $result_email === FALSE || $result_email->num_rows < 1 ) {
+                if( !$result_email || ($result_email instanceof mysqli_result && $result_email->num_rows < 1 ) ) {
                     echo "Invalid Login.";
                     echo "<meta http-equiv=\"REFRESH\" content=\"1;url=$address\">";
                 }
@@ -47,6 +47,20 @@ if( (isset( $_POST['nid'] ) && $_POST['nid'] != '' ) && ( isset( $_POST['pw'] ) 
                     //echo "Your login information has been verified.";
                     $_SESSION['email'] = $row_email['email'];
                     $_SESSION['username'] = $row_email['username'];
+                    $_SESSION['nid'] = $mfhelp->scrub( $_POST['nid'] );
+
+                    $result_nid = $mfhelp->query( MQEnum::ADMIN_CHECK, $_SESSION['nid'] );
+
+                    if( !( $result_nid instanceof mysqli_result ) || $result_nid->num_rows == 0 ) {
+                        echo "You are not authorized to interact with this application.";
+
+                        unset( $_SESSION['username'], $_SESSION['email'], $_SESSION['nid'] );
+                    }
+                    else {
+                        $row = mysqli_fetch_assoc( $result_nid );
+
+                        $_SESSION['level'] = intval( $row['level'] );
+                    }
                 }
             }
             else {
@@ -97,6 +111,8 @@ if( !isset( $_SESSION['username'] ) || empty( $_SESSION['username'] ) ) {
 
 <?php
 } else {
+
+    $level = $_SESSION['level'];
     ?>
 
     <div id="main" class="container mt-5">
@@ -106,9 +122,9 @@ if( !isset( $_SESSION['username'] ) || empty( $_SESSION['username'] ) ) {
                 <h4 class="heading-underline text-secondary text-center font-slab-serif mb-4">Welcome, <?= $_SESSION[ 'username' ] ?>!</h4>
                 <p class="lead text-secondary mb-1">Please select an option:</p>
                 <div class="list-group mb-3">
-                    <a href="swipe.php" class="list-group-item list-group-item-action">Start Event Swipe</a>
-                    <a href="events.php" class="list-group-item list-group-item-action">Manage Events</a>
-                    <a href="admin.php" class="list-group-item list-group-item-action">Admin Tools</a>
+                    <a href="<?= $level <= 3 ? "swipe.php" : "#" ?>" class="list-group-item list-group-item-action<?= $level <= 3 ? "" : " disabled" ?>">Start Event Swipe</a>
+                    <a href="<?= $level <= 2 ? "events.php" : "#" ?>" class="list-group-item list-group-item-action<?= $level <= 2 ? "" : " disabled" ?>">Manage Events</a>
+                    <a href="<?= $level == 1 ? "admin.php" : "#" ?>" class="list-group-item list-group-item-action<?= $level == 1 ? "" : " disabled" ?>">Admin Tools</a>
                 </div>
                 <a href="logout.php">
                     <button type="button" class="btn btn-primary" id="logout-button">Logout</button>
