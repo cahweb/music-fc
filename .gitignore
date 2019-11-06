@@ -1,6 +1,7 @@
 node_modules
 gulpfile.js
-.vscode/*
 jsconfig.json
 debug.log
 includes/dbconfig.php
+lib/adLDAP/*
+.vscode/*
