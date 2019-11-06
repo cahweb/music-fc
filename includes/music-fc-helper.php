@@ -19,14 +19,30 @@ if( !class_exists( 'MusicFCHelper' ) ) {
     class MusicFCHelper implements DatabaseHandler, AdLDAPAuthenticator
     {
 
+        // Setting member variables, protected in case we need to extend the class.
         protected $_dept;
 
         protected $_db_server, $_db_user, $_db_pass, $_db, $_charset;
 
         protected $_db_connection, $_adLDAP, $_query_lib;
 
+        // These ones are likely only for this use case.
         private $_link, $_menu_items;
 
+        /**
+         * The constructor. Sets all the variables in preparation for building the db connection,
+         * and instantiates the Query Library.
+         *
+         * @param string $db_server  The server hostname.
+         * @param string $db_user    The username for logging into the DB.
+         * @param string $db_pass    The password.
+         * @param string $db         The name of the database we'll primarily be using.
+         * @param string $charset    The Unicode character set. Defaults to UTF-8.
+         * @param array $menu_items  The menu items called by $this->menu_gen().
+         * @param integer $dept      The department, which we'll use for instantiating the Query Lib.
+         * 
+         * @return void
+         */
         public function __construct( string $db_server, string $db_user, string $db_pass, string $db = "", string $charset = "utf8", $menu_items = array(), $dept = 13 ) {
             $this->_db_server = $db_server;
             $this->_db_user = $db_user;
@@ -38,12 +54,17 @@ if( !class_exists( 'MusicFCHelper' ) ) {
 
             $this->_menu_items = $menu_items;
 
-            $this->_query_lib = $this->_get_query_lib();
-
             $this->_dept = $dept;
+
+            $this->_query_lib = $this->_get_query_lib();
         }
 
 
+        /**
+         * The destructor. Closes the database connection and deletes the Query Library instance.
+         * 
+         * @return void
+         */
         public function __destruct()
         {
             $this->close_db();
@@ -51,6 +72,11 @@ if( !class_exists( 'MusicFCHelper' ) ) {
         }
 
 
+        /**
+         * Gets the Database connection, or creates one if it doesn't exist.
+         *
+         * @return mysqli $_db_connection  The mysqli object that contains the connection info.
+         */
         public function get_db() : mysqli {
 
             if( !isset( $this->_db_connection ) || is_null( $this->_db_connection ) ) {
@@ -62,6 +88,11 @@ if( !class_exists( 'MusicFCHelper' ) ) {
         }
 
 
+        /**
+         * Closes the database connection, because we don't need it anymore.
+         *
+         * @return void
+         */
         public function close_db() {
 
             if( $this->_db_connection ) {
@@ -71,6 +102,16 @@ if( !class_exists( 'MusicFCHelper' ) ) {
         }
 
 
+        /**
+         * The function called in order to build and execute an SQL query.
+         * 
+         * @param int $type   The type of query to implement, represented by one of the
+         *                       values in the MusicQueryRef faux-enum class.
+         * @param array $args Any other arguments to be passed. Variadic because these will
+         *                       differ based on which query the user is trying to run.
+         * 
+         * @return mysqli_result|bool|null The result of the query, or NULL.
+         */
         public function query( int $type = MQEnum::MQ__DEFAULT, ... $args ) {
 
             $sql = $this->_get_query_lib()->get_query_str( $type, ... $args );
@@ -82,10 +123,22 @@ if( !class_exists( 'MusicFCHelper' ) ) {
         }
 
 
-        public function validate( $result, string $sql, int $type, $debug = TRUE ) : bool {
+        /**
+         * Validates the response from the database, so we don't end up passing unusable data back.
+         *
+         * @param [type] $result The result of the query, which is either a mysqli_result or a boolean.
+         * @param string $sql    The SQL string that fueled the query.
+         * @param integer $type  The type of query it was, because some of them get special treatement.
+         * @param boolean $debug Whether to output verbose error reporting.
+         * 
+         * @return boolean  Whether or not the result is valid and should be returned.
+         */
+        public function validate( $result, string $sql, int $type, $debug = FALSE ) : bool {
 
+            // Check if it's a valid result (though this doesn't rule out an empty set)
             if( $result instanceof mysqli_result ) {
 
+                // If it's an empty set and it's not one specific kind of query...
                 if( $result->num_rows < 1 && $type != MQEnum::EVENT_LOC_CHECK) {
                     if( $debug ) {
                         $msg = "Query returned an empty set. Original query:\n\t$sql\n";
@@ -95,9 +148,11 @@ if( !class_exists( 'MusicFCHelper' ) ) {
                 }
                 else return TRUE;
             }
+            // Will be TRUE if doing INSERT, UPDATE, DELETE, etc.
             else if( $result ) {
                 return TRUE;
             }
+            // Will be FALSE on error.
             else {
                 if( $debug ) {
                     $msg  = "There was an error with the SQL query.\n";
@@ -114,6 +169,11 @@ if( !class_exists( 'MusicFCHelper' ) ) {
         }
 
 
+        /**
+         * Attempts to create an instance of an adLDAP object
+         *
+         * @return adLDAP|null
+         */
         public function get_adLDAP(): ?adLDAP
         {
             if( is_null( $this->_adLDAP ) ) {

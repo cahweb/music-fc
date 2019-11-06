@@ -3,3 +3,4 @@ gulpfile.js
 .vscode/*
 jsconfig.json
 debug.log
+includes/dbconfig.php
