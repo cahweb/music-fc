@@ -34,7 +34,7 @@ require_once 'init.php';
     <script src="static/js/swipe.min.js"></script>
 
     <?php elseif( CURRENT_PAGE == 'admin.php' ) : ?>
-    <script src="src/js/admin.js"></script>
+    <script src="static/js/admin.min.js"></script>
     <?php require_once 'views/modal-add-student-entry.php'; ?>
     <?php require_once 'views/modal-edit-admin.php'; ?>
     <?php require_once 'views/modal-add-admin.php'; ?>
