@@ -1,6 +1,6 @@
 <?php
 
-// Storing the database variables here.
+// Storing the database variables here. #
 global $db, $db_server, $db_user, $db_pass;
 
 $db_user = "music_fc";
