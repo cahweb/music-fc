@@ -3,5 +3,6 @@ gulpfile.js
 jsconfig.json
 debug.log
 includes/dbconfig.php
+includes/vars.php
 lib/adLDAP/*
 .vscode/*
