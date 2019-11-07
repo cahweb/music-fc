@@ -1,8 +1,19 @@
 <?php
+/**
+ * A modal for allowing the user to add an admin entry.
+ * 
+ * @author Mike W. Leavitt
+ * @version 1.0.0
+ */
+
+// Requires
 require_once MUSIC_FC__BASE_DIR . '/includes/music-fc-query-ref.php';
 require_once MUSIC_FC__BASE_DIR . '/admin.php';
 
+// Aliasing because long classnames are long.
 use MusicQueryRef as MQEnum;
+
+// Building the modal:
 ?>
 
 <div class="modal fade" id="add-admin-modal" tabindex="-1" role="dialog" aria-labelledby="add-admin-modal-label" aria-hidden="true">
@@ -25,6 +36,7 @@ use MusicQueryRef as MQEnum;
                             <label for="new-level">Level:</label>
                             <select id="new-level" name="level" class="form-control">
                                 <?php
+                                // Get the possible admin levels.
                                 $result = $mfhelp->query( MQEnum::ADMIN_GET_LEVELS );
 
                                 if( $result instanceof mysqli_result && $result->num_rows > 0 ) {

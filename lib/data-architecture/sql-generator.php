@@ -9,8 +9,11 @@
 if( !interface_exists( 'SQLGenerator' ) ) {
     interface SQLGenerator
     {
+        // Because of the way I planned this, the SQL Generator
+        // should be instantiated, rather than static.
         public function __construct( ... $args );
 
+        // The core method that this kind of object needs.
         public function get_query_str( int $type, ... $args ) : string;
     }
 }

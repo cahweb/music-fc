@@ -1,8 +1,16 @@
 <?php
+/**
+ * A modal for editing the privilege level of a given admin.
+ * 
+ * @author Mike W. Leavitt
+ * @version 1.0.0
+ */
 
+// Requires
 require_once MUSIC_FC__BASE_DIR . "/includes/music-fc-query-ref.php";
 require_once MUSIC_FC__BASE_DIR . "/admin.php";
 
+// Aliasing because long classnames are long.
 use MusicQueryRef as MQEnum;
 ?>
 
@@ -22,6 +30,7 @@ use MusicQueryRef as MQEnum;
                             <label for="new-level">New Level:</label>
                             <select id="new-level" name="new-level" class="form-control">
                                 <?php
+                                // Get the available admin levels.
                                 $result = $mfhelp->query( MQEnum::ADMIN_GET_LEVELS );
 
                                 if( $result instanceof mysqli_result && $result->num_rows > 0 ) {

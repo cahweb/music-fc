@@ -1,4 +1,13 @@
 <?php
+/**
+ * The footer for the Music Forum Credit app. Loads the standard footer links and determines
+ * which JavaScript files to load.
+ * 
+ * @author Mike W. Leavitt
+ * @version 1.0.0
+ */
+
+// Requires
 require_once 'init.php';
 ?>
     <div class="container-fluid fixed-bottom">
@@ -41,6 +50,7 @@ require_once 'init.php';
     <?php endif; ?>
 
 <?php
+// Get rid of the MusicFCHelper object.
 unset( $mfhelp );
 ?>
 </body>

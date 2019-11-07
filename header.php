@@ -1,4 +1,12 @@
 <?php
+/**
+ * The header for the Music Forum Credit web app. Sets the document header and builds the navbar.
+ * 
+ * @author Mike W. Leavitt
+ * @version 1.0.0
+ */
+
+// Requires
 require_once 'init.php';
 ?>
 <!DOCTYPE html>

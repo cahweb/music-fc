@@ -1,20 +1,36 @@
 <?php
+/**
+ * The main page of the Music Forum Credit web app. Handles user login, for the most part,
+ * and, once logged in, presents links to the other pages.
+ * 
+ * @author Mike W. Leavitt
+ * @version 1.0.0
+ */
+
+// Requires
 require_once 'init.php';
 require_once 'includes/music-fc-helper.php';
 require_once 'includes/music-fc-query-ref.php';
 
+// Aliasing, because long classnames are long.
 use MusicQueryRef as MQEnum;
 
+// The footer uses this to determine which JavaScript to load.
 define( 'CURRENT_PAGE', basename( __FILE__ ) );
 
+// Get the header.
 require_once 'header.php';
 
+// Start the session.
 session_start();
+
+// Require the adLDAP module, too.
 require_once "lib/adLDAP/lib/adLDAP/adLDAP.php";
 
+// Exit if we can't find it.
 if( is_null( $mfhelp->get_adLDAP() ) ) exit( "Couldn't instantiate authenticator." );
 
-
+// Reset some $_SESSION variables, if necessary.
 if( isset( $SESSION[ 'event' ] ) )
     if( $_SESSION[ 'event' ] != '' )
         $_SESSION[ 'event' ] = '';
@@ -23,54 +39,73 @@ if( isset( $_SESSION[ 'email' ] ) )
     if( $_SESSION[ 'email' ] != '' )
         $_SESSION[ 'email' ] = '';
 
+// If the user has submitted stuff to the Login form, process it.
 if( (isset( $_POST['nid'] ) && $_POST['nid'] != '' ) && ( isset( $_POST['pw'] ) && $_POST['pw'] != '' ) ) {
+
+    // Initialize the variables.
     $email = $mfhelp->scrub( $_POST['nid'] );
     $pass  = $mfhelp->scrub( $_POST['pw'] );
     $authorized = FALSE;
 
+    // Check the basic login (probably a legacy step--most users will authenticate with adLDAP).
     $result = $mfhelp->query( MQEnum::LOGIN_BASE, $email, $pass );
 
+    // If we fail, we do adLDAP
     if( !$result || ( $result instanceof mysqli_result && $result->num_rows < 1 ) ) {
+        // Make sure we have an adLDAP object.
         if( $mfhelp->get_adLDAP() != NULL ) {
+            // Try to authenticate.
             if( $mfhelp->get_adLDAP()->authenticate( $email, $pass ) ) {
 
+                // Request the information we need from the DB.
                 $result_email = $mfhelp->query( MQEnum::LOGIN_ADLDAP, $email );
 
+                // Error handling.
                 if( !$result_email || ($result_email instanceof mysqli_result && $result_email->num_rows < 1 ) ) {
                     echo "Invalid Login.";
                     echo "<meta http-equiv=\"REFRESH\" content=\"1;url=$address\">";
                 }
+                // Otherwise, keep going.
                 else {
 
                     $row_email = mysqli_fetch_assoc( $result_email );
 
-                    //echo "Your login information has been verified.";
+                    // Set the $_SESSION variables we'll need.
                     $_SESSION['email'] = $row_email['email'];
                     $_SESSION['username'] = $row_email['username'];
                     $_SESSION['nid'] = $mfhelp->scrub( $_POST['nid'] );
 
+                    // Check to see if the user is an admin. If they're not, we're still not letting
+                    // them in, even if they successfully authenticate.
                     $result_nid = $mfhelp->query( MQEnum::ADMIN_CHECK, $_SESSION['nid'] );
 
+                    // If this, they're not in the list.
                     if( !( $result_nid instanceof mysqli_result ) || $result_nid->num_rows == 0 ) {
                         echo "You are not authorized to interact with this application.";
 
                         unset( $_SESSION['username'], $_SESSION['email'], $_SESSION['nid'] );
                     }
+                    // Otherwise, they're good to go.
                     else {
                         $row = mysqli_fetch_assoc( $result_nid );
 
+                        // Setting the last $_SESSION variable we'll need.
                         $_SESSION['level'] = intval( $row['level'] );
                     }
                 }
             }
+            // Error handling.
             else {
                 echo "Invalid Login";
             }
         }
+        // Error handling.
         else {
             echo "Invalid Login";
         }
     }
+    // In the off chance they can authenticate the old way, move forward. (Again, I don't think this ever
+    // actually fires anymore).
     else {
         $row = mysqli_fetch_assoc( $result );
         echo "Your login information has been verified.";
@@ -79,7 +114,7 @@ if( (isset( $_POST['nid'] ) && $_POST['nid'] != '' ) && ( isset( $_POST['pw'] ) 
     }
 }
 
-
+// If the user hasn't successfully logged in, show them the login form.
 if( !isset( $_SESSION['username'] ) || empty( $_SESSION['username'] ) ) {
 ?>
     <div id="main" class="container mt-5">
@@ -110,8 +145,10 @@ if( !isset( $_SESSION['username'] ) || empty( $_SESSION['username'] ) ) {
     </div>
 
 <?php
+// Otherwise, show them the main menu.
 } else {
 
+    // Checking this enables us to enable or diable links based on the user's admin level.
     $level = $_SESSION['level'];
     ?>
 
@@ -135,5 +172,6 @@ if( !isset( $_SESSION['username'] ) || empty( $_SESSION['username'] ) ) {
     <?php
 }
 
+// Get the footer.
 require_once 'footer.php';
 ?>

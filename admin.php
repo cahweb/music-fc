@@ -1,19 +1,34 @@
 <?php
+/**
+ * The administration page, for managing things on the back-end. The user has to be
+ * a Super Admin (music_fc.admins.level == 1) in order to view this page.
+ * 
+ * @author Mike W. Leavitt
+ * @version 1.0.0
+ */
 
+// Start the session
 session_start();
 
+// Check to make sure the user is logged in AND has the appropriate privileges. If not, kick them
+// back to the home page.
 if( !isset( $_SESSION['username'] ) || empty( $_SESSION['username'] ) || $_SESSION['level'] > 1 )
     header( "Location: index.php" );
 
+// Requires
 require_once 'init.php';
 require_once 'includes/music-fc-query-ref.php';
 
+// Aliasing, because long classnames are long.
 use MusicQueryRef AS MQEnum;
 
+// This helps the footer load the right JavaScript.
 define( 'CURRENT_PAGE', basename( __FILE__ ) );
 
+// Get the header.
 require_once 'header.php';
 
+// Build the rest of the page:
 ?>
 <div id="main" class="container mt-5">
     <div class="row justify-content-center">
@@ -51,6 +66,7 @@ require_once 'header.php';
                             <div class="col-11 col-md-7">
                                 <select id="event-select" name="event-select" class="form-control">
                                     <?php
+                                    //  Getting a list of events to format as <option>s.
                                     $result_event = $mfhelp->query( MQEnum::EVENT_LIST, -1, 0, -5, 'ASC' );
 
                                     if( $result_event instanceof mysqli_result && $result_event->num_rows > 0 ) {
@@ -112,6 +128,7 @@ require_once 'header.php';
                                 </thead>
                                 <tbody id="admin-result">
                                     <?php
+                                    // Getting the list of admins.
                                     $result = $mfhelp->query( MQEnum::ADMIN_GET_ALL );
 
                                     if( $result instanceof mysqli_result && $result->num_rows > 0 ) {
@@ -152,6 +169,6 @@ require_once 'header.php';
     </div>
 </div>
 <?php
-
+// Get the footer.
 require_once 'footer.php';
 ?>

@@ -1,18 +1,34 @@
 <?php
+/**
+ * The page for viewing and managing the Events. The user must have at least Admin privileges
+ * (music_fc.admins.level == 2) in order to view this page.
+ * 
+ * @author  Mike W. Leavitt
+ * @version 1.0.0
+ */
+
+// Start the session.
 session_start();
 
+// Make sure the user is logged in and has the appropriate privileges. Kicks them back to the
+// homepage if not.
 if( !isset( $_SESSION['username'] ) || empty( $_SESSION['username'] ) || $_SESSION['level'] > 2 )
     header( "Location: index.php" );
 
+// Requires
 require_once 'init.php';
 require_once 'includes/music-fc-query-ref.php';
 
+// Aliasing, because long classnames are long.
 use MusicQueryRef as MQEnum;
 
+// Used in the footer to load the right JavaScript.
 define( 'CURRENT_PAGE', basename( __FILE__ ) );
 
+// Get the header.
 require_once 'header.php';
 
+// Gets the total number of events, so we can display it on the page.
 if( $result_count = $mfhelp->query( MQEnum::EVENT_COUNT ) ) {
 
     $row_count = mysqli_fetch_all( $result_count );
@@ -27,7 +43,10 @@ else {
     $event_count = "an indeterminate number of";
 }
 
+// This is just the default. Can be changed to whatever.
 $show_limit = 20;
+
+// Build the rest of the page:
 ?>
 
 <input type="hidden" id="mysqlnd-qc-enable-switch" value="qc=on">
@@ -56,6 +75,7 @@ $show_limit = 20;
                 </thead>
                 <tbody>
                 <?php
+                // Get the full event list and display it on the table.
                 $result = $mfhelp->query( MQEnum::EVENT_LIST, $show_limit );
                 if( $result ) {
                     $dt_fmt = "Y-m-d H:i:s";
@@ -110,5 +130,6 @@ $show_limit = 20;
 </div>
 
 <?php
+// Get the footer.
 require_once 'footer.php';
 ?>

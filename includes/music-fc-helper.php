@@ -170,9 +170,9 @@ if( !class_exists( 'MusicFCHelper' ) ) {
 
 
         /**
-         * Attempts to create an instance of an adLDAP object
+         * Attempts to create an instance of an adLDAP object for Active Directory authentication.
          *
-         * @return adLDAP|null
+         * @return adLDAP|null  Returns the adLDAP object, or NULL if it fails.
          */
         public function get_adLDAP(): ?adLDAP
         {
@@ -189,10 +189,17 @@ if( !class_exists( 'MusicFCHelper' ) ) {
         }
 
 
+        /**
+         * Generates the list of menu links, called in header.php.
+         *
+         * @return string  The buffered HTML for the list of links.
+         */
         public function menu_gen() : string {
 
+            // Starts the output buffer.
             ob_start();
             
+            // Loop through the menu items and build the HTML
             foreach( $this->_menu_items as $label=>$page ) {
 
                 $classes = array( 
@@ -201,6 +208,8 @@ if( !class_exists( 'MusicFCHelper' ) ) {
                     "text-inverse" 
                 );
 
+                // Check to see if the link we're building is the active page, and gives it the
+                // "active" CSS class.
                 if( $_SERVER['REQUEST_URI'] == $page || basename( __FILE__ ) == $page)
                     array_push( $classes, "active" );
                 ?>
@@ -208,22 +217,43 @@ if( !class_exists( 'MusicFCHelper' ) ) {
                 <?php
             }
 
+            // Return the buffered HTML
             return ob_get_clean();
         }
 
 
+        /**
+         * Sanitizes user input before trying to query the database.
+         *
+         * @param string $item  The string to sanitize.
+         * 
+         * @return string  The sanitized string.
+         */
         public function scrub( string $item ) : string {
 
             return mysqli_real_escape_string( $this->get_db(), htmlentities( trim( $item ) ) );
         }
 
 
+        /**
+         * Creates an output formatted as a CSV file. Called from csv/export.php.
+         *
+         * @param boolean $canvas  Whether this is for Canvas or not.
+         * 
+         * @return void
+         */
         public function get_csv( bool $canvas = FALSE ) {
 
+            // Create the file pointer, using the built-in PHP output stream.
+            // (Can only be opened in Write mode)
             $output = fopen( 'php://output', 'w' );
 
+            // Get the number of columns we'll need. Not strictly necessary, but makes it
+            // So that we don't end up with useless columns bloating the file, and also
+            // makes it scaleable for larger applications.
             $result = $this->query( MQEnum::CSV_NUM_COLS );
 
+            // If it works, we set the $num_cols variable, free the database memory, and continue.
             if( $result instanceof mysqli_result && $result->num_rows > 0 ) {
                 $row = mysqli_fetch_assoc( $result );
 
@@ -231,16 +261,23 @@ if( !class_exists( 'MusicFCHelper' ) ) {
 
                 mysqli_free_result( $result );
             }
+            // This sets it to 0, which will cause the file writing to fail, below.
             else {
                 $num_cols = 0;
             }
 
+            // Make sure we've got events to report.
             if( $num_cols > 0 ) {
 
+                // NOW we query for the full list of students/events. We use essentially
+                // the same data, whether it's the standard output or the Canvas output,
+                // so we don't need multiple queries, really.
                 $result = $this->query( MQEnum::CSV_LIST );
 
+                // If we get stuff, we do stuff.
                 if( $result instanceof mysqli_result && $result->num_rows > 0 ) {
 
+                    // Setting the inital column names, which differ between output types.
                     if( $canvas ) {
 
                         $headers = array(
@@ -259,13 +296,18 @@ if( !class_exists( 'MusicFCHelper' ) ) {
                         );
                     }
 
+                    // Create columns for all the necessary events. Not all students will have all
+                    // these columns filled, but it will make sure the CSV is big enough for the
+                    // student with the highest number of events attended.
                     for( $i = 1; $i <= $num_cols; $i++ ) {
 
                         array_push( $headers, "Event $i" );
                     }
 
+                    // Write the header row.
                     fputcsv( $output, $headers );
 
+                    // The Canvas version also gets a "Points Possible" row, with some default values.
                     if( $canvas ) {
 
                         $points = array( "Points Possible", "", "" ,"", "" );
@@ -277,22 +319,27 @@ if( !class_exists( 'MusicFCHelper' ) ) {
                         fputcsv( $output, $points );
                     }
 
+                    // Initializing some variables we'll need to keep track of things.
                     $curr_nid = "";
                     $line = array();
-
                     $num_rows = $result->num_rows;
                     $counter = 0;
+
                     while( $row = mysqli_fetch_assoc( $result ) ) {
 
+                        // If we have a new NID, we've moved on to a new student entry.
                         if( $row['nid'] != $curr_nid ) {
                             $curr_nid = $row['nid'];
 
+                            // Outputs the line we just finished building, so we can start fresh.
                             if( !empty( $line ) ) {
                                 fputcsv( $output, $line );
                             }
 
+                            // Starts fresh. ;)
                             $line = array();
 
+                            // Outputs the initial line values, before we start keeping track of events.
                             if( $canvas ) {
                                 array_push( $line, $row['student'],
                                                    "",
@@ -306,8 +353,11 @@ if( !class_exists( 'MusicFCHelper' ) ) {
                             }
                         }
 
-                        array_push( $line, $row['title'] );
+                        // Does the right output, based on what kind of CSV we're making.
+                        array_push( $line, ( $canvas ? "1" : $row['title'] ) );
 
+                        // Increments the counter and checks to see if this is the last iteration,
+                        // so we don't miss writing the last student's info.
                         if( ++$counter == $num_rows ) {
                             fputcsv( $output, $line );
                         }
@@ -315,14 +365,22 @@ if( !class_exists( 'MusicFCHelper' ) ) {
 
                 }
             }
+            // If we didn't find any rows, we let the user know.
             else {
                 fputcsv( $output, array("NO DATA") );
             }
 
+            // Closes the file.
             fclose( $output );
         }
 
 
+        /**
+         * Retrieves the query library, or instantiates one if it hasn't been created yet.
+         * Only used internally, since everything on the outside will call $this->query().
+         *
+         * @return MFQLib  Returns the MusicFCQueryLib object.
+         */
         protected function _get_query_lib() : MFQLib {
             
             if( is_null( $this->_query_lib ) ) {

@@ -1,4 +1,11 @@
 <?php
+/**
+ * Defines some variables and constants for this particular site.
+ * 
+ * @author Mike W. Leavitt
+ * @version 1.0.0
+ */
+
 define("PASSWORD_KEY","YdQhyupCTMyvvGGESupercalifragilisticexpialidociousbVKh5VVVYP5SwACq");
 
 $title = "UCF Music | Card Scanner";
