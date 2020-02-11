@@ -242,7 +242,7 @@ if( !class_exists( 'MusicFCHelper' ) ) {
          * 
          * @return void
          */
-        public function get_csv( bool $canvas = FALSE ) {
+        public function get_csv( string $term, string $year, bool $canvas = FALSE ) {
 
             // Create the file pointer, using the built-in PHP output stream.
             // (Can only be opened in Write mode)
@@ -251,7 +251,7 @@ if( !class_exists( 'MusicFCHelper' ) ) {
             // Get the number of columns we'll need. Not strictly necessary, but makes it
             // So that we don't end up with useless columns bloating the file, and also
             // makes it scaleable for larger applications.
-            $result = $this->query( MQEnum::CSV_NUM_COLS );
+            $result = $this->query( MQEnum::CSV_NUM_COLS, $term, $year );
 
             // If it works, we set the $num_cols variable, free the database memory, and continue.
             if( $result instanceof mysqli_result && $result->num_rows > 0 ) {
@@ -272,7 +272,7 @@ if( !class_exists( 'MusicFCHelper' ) ) {
                 // NOW we query for the full list of students/events. We use essentially
                 // the same data, whether it's the standard output or the Canvas output,
                 // so we don't need multiple queries, really.
-                $result = $this->query( MQEnum::CSV_LIST );
+                $result = $this->query( MQEnum::CSV_LIST, $term, $year );
 
                 // If we get stuff, we do stuff.
                 if( $result instanceof mysqli_result && $result->num_rows > 0 ) {

@@ -19,6 +19,8 @@ if( !class_exists( 'MusicFCQueryLib' ) ) {
 
         private $_login_base_str, $_limit;
 
+        private $_term_begin, $term_end;
+
         /**
          * The constructor. Sets the base values for things we'll need later on.
          * 
@@ -449,11 +451,14 @@ if( !class_exists( 'MusicFCQueryLib' ) ) {
          * 
          * @return string The built query string.
          */
-        private function _csv_num_cols( int $cutoff = -5, ... $args ) : string {
+        private function _csv_num_cols( string $term, string $year, ... $args ) : string {
 
-            $past_cutoff = date( "Y-m-d", strtotime( "$cutoff months" ) );
+            $dates = $this->_get_term_dates( $term, $year );
+            $fmt = 'Y-m-d H:i:s';
+            $start = $dates['start']->format( $fmt );
+            $end = $dates['end']->format( $fmt );
 
-            return "SELECT MAX( sq.event_count ) AS num_columns FROM (SELECT COUNT(ssq.event) AS event_count FROM (SELECT DISTINCT swipe.event, c.nid FROM music_fc.swipe LEFT JOIN cards_10182019 AS c ON c.card = swipe.card WHERE swipe.time >= '$past_cutoff' AND c.nid IS NOT NULL AND c.nid NOT LIKE 'jparker' ) AS ssq GROUP BY ssq.nid ORDER BY event_count DESC) AS sq";
+            return "SELECT MAX( sq.event_count ) AS num_columns FROM (SELECT COUNT(ssq.event) AS event_count FROM (SELECT DISTINCT swipe.event, c.nid FROM music_fc.swipe LEFT JOIN cards_10182019 AS c ON c.card = swipe.card WHERE swipe.time >= '$start' AND swipe.time <= '$end' AND c.nid IS NOT NULL AND c.nid NOT LIKE 'jparker' ) AS ssq GROUP BY ssq.nid ORDER BY event_count DESC) AS sq";
         }
 
 
@@ -465,11 +470,48 @@ if( !class_exists( 'MusicFCQueryLib' ) ) {
          * 
          * @return string The build query string.
          */
-        private function _csv_list( int $cutoff = -5, ... $args ) : string {
+        private function _csv_list( string $term, string $year, ... $args ) : string {
 
-            $past_cutoff = date( "Y-m-d", strtotime( "$cutoff months" ) );
+            $dates = $this->_get_term_dates( $term, $year );
 
-            return "SELECT DISTINCT CONCAT_WS(' ', csv.fname, csv.lname) AS student, csv.nid, csv.pid, csv.title FROM (SELECT swipe.event, swipe.lname, swipe.fname, c.nid, c.pid, event_list.title, swipe.time FROM music_fc.swipe LEFT JOIN cards_10182019 AS c ON c.card = swipe.card LEFT JOIN (SELECT c.id, c.title FROM cah.events AS c WHERE c.department_id = 13 AND (c.enddate <= CURRENT_TIMESTAMP AND c.startdate >= '$past_cutoff') OR (c.startdate >= CURRENT_TIMESTAMP) AND c.approved = 1 UNION SELECT m.id, m.name FROM music_fc.events AS m WHERE (m.time <= CURRENT_TIMESTAMP AND m.time >= '$past_cutoff') OR (m.time >= CURRENT_TIMESTAMP)) AS event_list ON event_list.id = swipe.event WHERE swipe.time >= DATE_SUB( CURRENT_DATE, INTERVAL 5 MONTH ) AND c.nid IS NOT NULL AND c.nid NOT LIKE 'jparker') AS csv ORDER BY csv.lname, csv.fname, csv.time ASC";
+            $fmt = 'Y-m-d H:i:s';
+            $start = $dates['start']->format( $fmt );
+            $end = $dates['end']->format( $fmt );
+
+            return "SELECT DISTINCT CONCAT_WS(' ', csv.fname, csv.lname) AS student, csv.nid, csv.pid, csv.title FROM (SELECT swipe.event, swipe.lname, swipe.fname, c.nid, c.pid, event_list.title, swipe.time FROM music_fc.swipe LEFT JOIN cards_10182019 AS c ON c.card = swipe.card LEFT JOIN (SELECT c.id, c.title FROM cah.events AS c WHERE c.department_id = 13 AND (c.enddate <= '$end' AND c.startdate >= '$start') AND c.approved = 1 UNION SELECT m.id, m.name FROM music_fc.events AS m WHERE (m.time <= '$end' AND m.time >= '$start')) AS event_list ON event_list.id = swipe.event WHERE swipe.time >= '$start' AND swipe.time <= '$end' AND c.nid IS NOT NULL AND c.nid NOT LIKE 'jparker') AS csv ORDER BY csv.lname, csv.fname, csv.time ASC";
+        }
+
+
+        private function _get_term_dates( string $term, string $year ) : array {
+            $url = "https://calendar.ucf.edu/json/$year/$term";
+
+            $cal = json_decode( file_get_contents( $url ), true );
+
+            $start = null;
+            $end = null;
+            $fmt_in = 'Y-m-d H:i:sT';
+
+            foreach( $cal['terms'] as $term ) {
+                foreach( $term['events'] as $event ) {
+                    if( stripos( $event['summary'], 'classes begin' ) !== false ) {
+                        $temp_start = date_create_from_format( $fmt_in, $event['dtstart'] );
+
+                        if( is_null( $start ) || $temp_start <= $start ) {
+                            $start = $temp_start;
+                        }
+                    }
+
+                    if( stripos( $event['summary'], 'classes end' ) !== false ) {
+                        $temp_end = date_create_from_format( $fmt_in, $event['dtstart'] );
+
+                        if( is_null( $end ) || $temp_end >= $end ) {
+                            $end = $temp_end;
+                        }
+                    }
+                }
+            }
+
+            return array('start' => $start, 'end' => $end );
         }
     }
 }

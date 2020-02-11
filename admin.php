@@ -28,6 +28,23 @@ define( 'CURRENT_PAGE', basename( __FILE__ ) );
 // Get the header.
 require_once 'header.php';
 
+$terms = array(
+    "fall",
+    "spring",
+    "summer",
+);
+$year = 0;
+
+$today = date_create();
+$year_start = date_create_from_format( 'Y-m-d', $today->format('Y') . "-08-15" );
+
+if( $today >= $year_start ) {
+    $year = intval( $today->format('Y') );
+}
+else {
+    $year = intval( $today->format('Y') ) - 1;
+}
+
 // Build the rest of the page:
 ?>
 <div id="main" class="container mt-5">
@@ -46,16 +63,33 @@ require_once 'header.php';
             </ul>
             <div class="tab-content bg-faded p-3" id="admin-tabs">
                 <div class="tab-pane fade show active" id="tools" role="tabpanel" aria-labelledby="tools-tab">
-                    <div class="d-flex flex-row justify-content-around mb-3">
+                    <div class="d-flex flex-row justify-content-around mb-3 form-inline">
                         <button type="button" id="add-student-btn" class="btn btn-primary" data-toggle="modal" data-target="#student-entry-modal">Add Student Entry</button>
-                        <a href="csv/export.php?canvas=0" target="_blank"><button type="button" id="get-csv" class="btn btn-primary">Export CSV</button></a>
-                        <a href="csv/export.php?canvas=1" target="_blank"><button type="button" id="get-csv-canvas" class="btn btn-primary">Canvas CSV</button></a>
+
+                        <div class="form-group form-inline">
+                            <select id="term-select" class="form-control mx-2">
+                            <?php
+                            foreach( $terms as $term ) {
+                                ?>
+                                <option value="<?= $term ?>-<?= 'fall' == $term ? $year : $year + 1 ?>"><?= ucfirst( $term ) ?> <?= 'fall' == $term ? $year : $year + 1 ?></option>
+                                <?php
+                            }
+                            ?>
+                            </select>
+
+                            <a href="csv/export.php?canvas=0" target="_blank"><button type="button" id="get-csv" class="btn btn-primary mx-2">Export CSV</button></a>
+
+                            <a href="csv/export.php?canvas=1" target="_blank"><button type="button" id="get-csv-canvas" class="btn btn-primary mx-2">Canvas CSV</button></a>
+                        </div>
                     </div>
                     <small>Click "Add Student Entry" to manually add a student's swipe record.
                         <br />
-                        Click "Export CSV" to get the most recent swipe data in a spreadsheet format.
+                        Select a term and then:
                         <br />
-                        Click "Canvas CSV" to get the same data, only in a format compatible with the Canvas gradebook.
+                        <ul>
+                            <li>Click "Export CSV" to get the most recent swipe data in a spreadsheet format.</li>
+                            <li>Click "Canvas CSV" to get the same data, only in a format compatible with the Canvas gradebook.</li>
+                        </ul>
                     </small>
                 </div>
 

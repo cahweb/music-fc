@@ -27,8 +27,8 @@ use MusicQueryRef as MQEnum;
                 <div class="container-fluid">
                     <form id="admin-level">
                         <div class="form-group">
-                            <label for="new-level">New Level:</label>
-                            <select id="new-level" name="new-level" class="form-control">
+                            <label for="new-level-edit">New Level:</label>
+                            <select id="new-level-edit" name="new-level" class="form-control">
                                 <?php
                                 // Get the available admin levels.
                                 $result = $mfhelp->query( MQEnum::ADMIN_GET_LEVELS );

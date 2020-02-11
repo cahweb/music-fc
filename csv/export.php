@@ -25,14 +25,18 @@ define( 'CURRENT_PAGE', basename(__FILE__) );
 // Get the variable. Because of PHP's weird truth tables, "0" evaluates to FALSE, so the 1 or 0
 // will turn into an actual boolean, here.
 $canvas = $_GET['canvas'] ? TRUE : FALSE;
+$term = $_GET['term'];
+$year = $_GET['year'];
 
+
+$filename = "music_fc_" . ( $canvas ? 'canvas_' : '' ) . ucfirst( $term ) . $year . "_" . date('Ymd') . ".csv";
 // Set the headers to force a download rather than stream it to the browser, and provide the default
 // file name.
 header( 'Content-Type: text/csv; charset=utf-8' );
-header( 'Content-Disposition: attachment; filename=music_fc_' . ( $canvas ? 'canvas_' : '' ) . date('Ymd') . '.csv' );
+header( "Content-Disposition: attachment; filename=$filename" );
 
 // Call the method in our MusicFCHelper instance that will generate and stream the CSV file
 // to the user. 
-$mfhelp->get_csv( $canvas );
+$mfhelp->get_csv( $term, $year, $canvas );
 
 ?>

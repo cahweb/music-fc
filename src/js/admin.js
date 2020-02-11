@@ -6,6 +6,7 @@ const ajaxURL = 'music-fc-ajax.php';
 // Fires once the page loads.
 $(document).ready(function() {
     addClickListeners();
+    setupInputs();
 });
 
 
@@ -29,12 +30,17 @@ function addClickListeners() {
         // Gather and parse the form data.
         let data = getFormData('student-entry');
 
-        // Set the raw input.
-        data['rawInput'] = "From Admin Panel";
+        if(data['studentNID'] == '') {
+            alert("Please enter a student's NID.");
+        }
+        else {
 
-        // Send all the relevant info to the adminUpdate function.
-        adminUpdate(data, 'add-swipe', () => { alert('Student entry added successfully!'); });
+            // Set the raw input.
+            data['rawInput'] = "From Admin Panel";
 
+            // Send all the relevant info to the adminUpdate function.
+            adminUpdate(data, 'add-swipe', () => { alert('Student entry added successfully!'); });
+        }
         // Hide the modal.
         $('#student-entry-modal').modal('hide');
     });
@@ -133,6 +139,36 @@ function addEditDeleteListeners() {
 }
 
 
+function setupInputs() {
+    $('#term-select').on('change', function() {
+        changeTerm();
+    });
+
+    changeTerm();
+}
+
+
+function changeTerm() {
+    const termSplit = $('#term-select').val().split('-');
+    const termData = {
+        term: termSplit[0],
+        year: termSplit[1],
+    };
+
+    console.log($('#term-select').siblings());
+
+    $('#term-select').siblings().each(function() {
+        const oldHref = $(this).attr('href').split('&');
+        let href = oldHref[0];
+        for (const [key, value] of Object.entries(termData)) {
+            href += `&${key}=${value}`;
+        }
+
+        $(this).attr('href', href);
+    });
+}
+
+
 /**
  * Handles running the AJAX requests on the page.
  * 
@@ -157,6 +193,7 @@ function adminUpdate(formData, action, callback = () => {}, ...cbArgs) {
     // Do the AJAX, then handle the response.
     doAjax(formData).then( response => {
 
+        console.log( response );
         switch(parseInt(response)) {
             // If it's a binary TRUE response, just run the callback. This will mostly
             // be for the refreshAdminList() function.
