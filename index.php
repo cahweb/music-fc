@@ -25,7 +25,8 @@ require_once 'header.php';
 session_start();
 
 // Require the adLDAP module, too.
-require_once "lib/adLDAP/lib/adLDAP/adLDAP.php";
+//require_once "lib/adLDAP/lib/adLDAP/adLDAP.php";
+require_once 'NET/adLDAP.php';
 
 // Exit if we can't find it.
 if( is_null( $mfhelp->get_adLDAP() ) ) exit( "Couldn't instantiate authenticator." );
