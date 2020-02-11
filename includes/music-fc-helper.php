@@ -7,8 +7,8 @@
  */
 
 require_once MUSIC_FC__BASE_DIR . '/lib/data-architecture/database-handler.php';
-require_once MUSIC_FC__BASE_DIR . '/lib/adLDAP/lib/adLDAP/adLDAP.php';
-//require_once 'NET/adLDAP.php';
+//require_once MUSIC_FC__BASE_DIR . '/lib/adLDAP/lib/adLDAP/adLDAP.php';
+require_once 'NET/adLDAP.php';
 require_once MUSIC_FC__BASE_DIR . '/lib/data-architecture/adLDAP-authenticator.php';
 require_once 'music-fc-query-lib.php';
 require_once 'music-fc-query-ref.php';
