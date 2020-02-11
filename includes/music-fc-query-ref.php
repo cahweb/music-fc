@@ -33,6 +33,7 @@ if( !class_exists( 'MusicQueryRef' ) ) {
         const ADMIN_DELETE = 19;
         const CSV_NUM_COLS = 20;
         const CSV_LIST = 21;
+        const CARD_NAME_LOOKUP = 22;
     }
 }
 ?>

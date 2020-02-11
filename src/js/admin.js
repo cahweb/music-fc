@@ -39,7 +39,7 @@ function addClickListeners() {
             data['rawInput'] = "From Admin Panel";
 
             // Send all the relevant info to the adminUpdate function.
-            adminUpdate(data, 'add-swipe', () => { alert('Student entry added successfully!'); });
+            adminUpdate(data, 'add-swipe', result => { if (result) alert('Student entry added successfully!'); });
         }
         // Hide the modal.
         $('#student-entry-modal').modal('hide');
@@ -198,7 +198,7 @@ function adminUpdate(formData, action, callback = () => {}, ...cbArgs) {
             // If it's a binary TRUE response, just run the callback. This will mostly
             // be for the refreshAdminList() function.
             case 1:
-                callback();
+                callback(response);
                 break;
             // Log that there was an error, if there's ap problem.
             case 0:

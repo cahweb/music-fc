@@ -50,6 +50,8 @@ if( !class_exists( 'MusicFCQueryLib' ) ) {
          */
         public function get_query_str( int $type, ... $args ) : string {
 
+            $sql = '';
+
             // Here we go...
             switch( $type ) {
 
@@ -163,6 +165,11 @@ if( !class_exists( 'MusicFCQueryLib' ) ) {
                     $sql = $this->_csv_list( ... $args );
                     break;
 
+                //Gets the student's name and card number from their NID
+                case MQEnum::CARD_NAME_LOOKUP:
+                    $sql = $this->_card_lookup_by_nid( ... $args );
+                    break;
+
                 default :
                     break;
             }
@@ -210,11 +217,20 @@ if( !class_exists( 'MusicFCQueryLib' ) ) {
          * 
          * @return string The built query string.
          */
-        private function _event_list( int $per_page = 20, int $page = 0, int $cutoff = -5, string $order = "DESC", ... $args ) : string {
+        private function _event_list( int $per_page = 20, int $page = 0, string $order = "DESC", ... $args ) : string {
 
-            $past_cutoff = date( "Y-m-d", strtotime( "$cutoff months" ) );
+            $term = $this->_get_term();
+            $year = date_create()->format('Y');
 
-            return "/*" . MYSQLND_QC_ENABLE_SWITCH . "*/ " . "SELECT c.id, c.startdate, c.title FROM cah.events AS c WHERE c.department_id = $this->_dept AND (c.enddate <= CURRENT_TIMESTAMP AND c.startdate >= '$past_cutoff') OR (c.startdate >= CURRENT_TIMESTAMP) AND c.approved = 1 UNION SELECT m.id,  m.time, m.name FROM music_fc.events AS m WHERE (m.time <= CURRENT_TIMESTAMP AND m.time >= '$past_cutoff') OR (m.time >= CURRENT_TIMESTAMP) ORDER BY startdate $order, title ASC " . ( $per_page > 0 ? "LIMIT $page, $per_page" : "" );
+            $dates = $this->_get_term_dates( $term, $year );
+
+            $fmt = 'Y-m-d';
+            $start = $dates['start']->format( $fmt );
+            $end = $dates['end']->format( $fmt );
+
+            $sql = "/*" . MYSQLND_QC_ENABLE_SWITCH . "*/ " . "SELECT c.id, c.startdate, c.title FROM cah.events AS c WHERE c.department_id = $this->_dept AND (c.enddate <= '$end' AND c.startdate >= '$start') OR (c.startdate >= CURRENT_TIMESTAMP) AND c.approved = 1 UNION SELECT m.id,  m.time, m.name FROM music_fc.events AS m WHERE (m.time <= '$end' AND m.time >= '$start') OR (m.time >= CURRENT_TIMESTAMP) ORDER BY startdate $order, title ASC " . ( $per_page > 0 ? "LIMIT $page, $per_page" : "" );
+
+            return $sql;
         }
 
 
@@ -225,11 +241,18 @@ if( !class_exists( 'MusicFCQueryLib' ) ) {
          * 
          * @return string The built query string.
          */
-        private function _event_count( int $cutoff = -5, ... $args ) : string {
+        private function _event_count( ... $args ) : string {
 
-            $past_cutoff = date( "Y-m-d", strtotime( "$cutoff months" ) );
+            $term = $this->_get_term();
+            $year = date_create()->format('Y');
 
-            return "SELECT count(*) AS event_count FROM cah.events WHERE department_id = $this->_dept AND (enddate <= CURRENT_TIMESTAMP AND startdate >= '$past_cutoff') OR (startdate >= CURRENT_TIMESTAMP) AND approved = 1 UNION SELECT count(*) AS event_count FROM music_fc.events WHERE (time <= CURRENT_TIMESTAMP AND time >= '$past_cutoff') OR (time >= CURRENT_TIMESTAMP)";
+            $dates = $this->_get_term_dates( $term, $year );
+
+            $fmt = 'Y-m-d H:i:s';
+            $start = $dates['start']->format( $fmt );
+            $end = $dates['end']->format( $fmt );
+
+            return "SELECT count(*) AS event_count FROM cah.events WHERE department_id = $this->_dept AND (enddate <= '$end' AND startdate >= '$start') OR (startdate >= CURRENT_TIMESTAMP) AND approved = 1 UNION SELECT count(*) AS event_count FROM music_fc.events WHERE (time <= '$end' AND time >= '$start') OR (time >= CURRENT_TIMESTAMP)";
         }
 
 
@@ -482,6 +505,30 @@ if( !class_exists( 'MusicFCQueryLib' ) ) {
         }
 
 
+        private function _get_term() : string {
+            $today = date_create();
+            $m = intval( $today->format('m') );
+
+            $term = "";
+
+            $summer_begin = date_create_from_format('Y-m-d', $today->format('Y') . "-05-01" );
+
+            $fall_begin = date_create_from_format('Y-m-d', $today->format('Y') . "-08-10" );
+
+            if( $today >= $summer_begin && $today <= $fall_begin ) {
+                $term = 'summer';
+            }
+            else if( $today >= $fall_begin ) {
+                $term = 'fall';
+            }
+            else {
+                $term = 'spring';
+            }
+
+            return $term;
+        }
+
+
         private function _get_term_dates( string $term, string $year ) : array {
             $url = "https://calendar.ucf.edu/json/$year/$term";
 
@@ -512,6 +559,17 @@ if( !class_exists( 'MusicFCQueryLib' ) ) {
             }
 
             return array('start' => $start, 'end' => $end );
+        }
+
+
+        /**
+         * Looks up a student's first name, last name, and UCF card number by their NID.
+         * 
+         * @param string $nid  The student's NID.
+         */
+        private function _card_lookup_by_nid( string $nid, ... $args ) : string {
+
+            return "SELECT pi.PERS_PRIMARY_FIRST_NAME AS fname, pi.PERS_PRIMARY_LAST_NAME AS lname, c.card FROM rds.cc_personal_dim AS pi LEFT JOIN music_fc.cards_10182019 AS c ON pi.PERS_NID = c.nid WHERE pi.PERS_NID = '$nid' LIMIT 1";
         }
     }
 }

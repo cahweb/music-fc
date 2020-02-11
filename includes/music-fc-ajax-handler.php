@@ -401,28 +401,35 @@ if( !class_exists( 'MusicFCAjaxHandler') ) {
          */
         private function _add_swipe( array $data ) : int {
             
-            // Preparing a DateTime, if that information is provided. Will only come from the
-            // manual swipe entry on admin.php.
-            if( ( isset( $data['date'] ) && !empty( $data['date'] ) ) && ( isset( $data['time'] ) && !empty( $data['time'] ) ) ) {
-                $dt_fmt = "Y-m-d H:i:s";
-                $d_fmt = "m/d/y";
-                $t_fmt = "g:i a";
+            $sqlData = array();
 
-                $datetime = date_create_from_format( $dt_fmt, $data['date'] . " " . $data['time'] . ":00" );
+            if( isset( $data['studentNID'] ) ) {
+                $result = $this->mfhelp->query( MQEnum::CARD_NAME_LOOKUP, $data['studentNID'] );
 
-                $data['datetime'] = $datetime;
+                if( $result instanceof mysqli_result && $result->num_rows > 0 && $row = mysqli_fetch_assoc( $result ) ) {
+                    $sqlData = array(
+                        intval( $data['eventID'] ),
+                        $row['fname'],
+                        $row['lname'],
+                        ( isset( $row['card'] ) ? $row['card'] : '' ),
+                        $data['rawInput'],
+                    );
+
+                    mysqli_free_result( $result );
+                }
             }
-
-            // Arrange the data we'll pass to the query method.
-            $sqlData = array(
-                intval( $data['eventID'] ),
-                $data['fname'],
-                $data['lname'],
-                $data['cardNum'],
-                $data['rawInput'],
-                "john.parker@ucf.edu",
-                isset( $data['datetime'] ) ? $data['datetime'] : NULL
-            );
+            else {
+                // Arrange the data we'll pass to the query method.
+                $sqlData = array(
+                    intval( $data['eventID'] ),
+                    $data['fname'],
+                    $data['lname'],
+                    $data['cardNum'],
+                    $data['rawInput'],
+                    "john.parker@ucf.edu",
+                    isset( $data['datetime'] ) ? $data['datetime'] : NULL
+                );
+            }
 
             // Run it and report success/failure.
             $result = $this->mfhelp->query( MQEnum::SWIPE_ADD, ... $sqlData );

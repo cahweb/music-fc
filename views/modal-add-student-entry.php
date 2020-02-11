@@ -13,7 +13,7 @@ use MusicQueryRef as MQEnum;
 ?>
 
 <div class="modal fade" id="student-entry-modal" tabindex="-1" role="dialog" aria-labelledby="student-entry-modal-label" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="student-entry-modal-label">Add Student Entry</h5>
@@ -62,35 +62,10 @@ use MusicQueryRef as MQEnum;
                                 ?>
                             </select>
                         </div>
-                        <fieldset>
-                            <legend>Student Information</legend>
-                            <div class="form-group row">
-                                <label for="fname" class="col-4 col-md-2 col-form-label">First Name:</label>
-                                <div class="col-8 col-md-4">
-                                    <input type="text" id="fname" name="fname" class="form-control" placeholder="John Q">
-                                </div>
-                                <label for="lname" class="col-4 col-md-2 col-form-label">Last Name:</label>
-                                <div class="col-8 col-md-4">
-                                    <input type="text" id="lname" name="lname" class="form-control" placeholder="Average">
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label for="date" class="col-4 col-md-2 col-form-label">Date:</label>
-                                <div class="col-8 col-md-4">
-                                    <input type="date" id="date" name="date" class="form-control">
-                                </div>
-                                <label for="time" class="col-4 col-md-2 col-form-label">Time:</label>
-                                <div class="col-8 col-md-4">
-                                    <input type="time" id="time" name="time" class="form-control">
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label for="card" class="col-4 col-md-2 col-form-label">Card Number:</label>
-                                <div class="col-8 col-md-4">
-                                    <input type="number" id="card" name="cardNum" class="form-control" maxlength="16">
-                                </div>
-                            </div>
-                        </fieldset>
+                        <div class="form-group">
+                            <label for="student-nid">Student NID</label>
+                            <input type="text" class="form-control" id="student-nid" name="studentNID" placeholder="ab123456">
+                        </div>
                     </form>
                 </div>
             </div>
