@@ -481,7 +481,7 @@ if( !class_exists( 'MusicFCQueryLib' ) ) {
             $start = $dates['start']->format( $fmt );
             $end = $dates['end']->format( $fmt );
 
-            return "SELECT MAX( sq.event_count ) AS num_columns FROM (SELECT COUNT(ssq.event) AS event_count FROM (SELECT DISTINCT swipe.event, c.nid FROM music_fc.swipe LEFT JOIN cards_10182019 AS c ON c.card = swipe.card WHERE swipe.time >= '$start' AND swipe.time <= '$end' AND c.nid IS NOT NULL AND c.nid NOT LIKE 'jparker' ) AS ssq GROUP BY ssq.nid ORDER BY event_count DESC) AS sq";
+            return "SELECT MAX( sq.event_count ) AS num_columns FROM (SELECT COUNT(ssq.event) AS event_count FROM (SELECT DISTINCT swipe.event, c.nid FROM music_fc.swipe LEFT JOIN cards AS c ON c.card = swipe.card WHERE swipe.time >= '$start' AND swipe.time <= '$end' AND c.nid IS NOT NULL AND c.nid NOT LIKE 'jparker' ) AS ssq GROUP BY ssq.nid ORDER BY event_count DESC) AS sq";
         }
 
 
@@ -501,7 +501,7 @@ if( !class_exists( 'MusicFCQueryLib' ) ) {
             $start = $dates['start']->format( $fmt );
             $end = $dates['end']->format( $fmt );
 
-            return "SELECT DISTINCT CONCAT_WS(' ', csv.fname, csv.lname) AS student, csv.nid, csv.pid, csv.title FROM (SELECT swipe.event, swipe.lname, swipe.fname, c.nid, c.pid, event_list.title, swipe.time FROM music_fc.swipe LEFT JOIN cards_10182019 AS c ON c.card = swipe.card LEFT JOIN (SELECT c.id, c.title FROM cah.events AS c WHERE c.department_id = 13 AND (c.enddate <= '$end' AND c.startdate >= '$start') AND c.approved = 1 UNION SELECT m.id, m.name FROM music_fc.events AS m WHERE (m.time <= '$end' AND m.time >= '$start')) AS event_list ON event_list.id = swipe.event WHERE swipe.time >= '$start' AND swipe.time <= '$end' AND c.nid IS NOT NULL AND c.nid NOT LIKE 'jparker') AS csv ORDER BY csv.lname, csv.fname, csv.time ASC";
+            return "SELECT DISTINCT CONCAT_WS(' ', csv.fname, csv.lname) AS student, csv.nid, csv.pid, csv.title FROM (SELECT swipe.event, swipe.lname, swipe.fname, c.nid, c.pid, event_list.title, swipe.time FROM music_fc.swipe LEFT JOIN cards AS c ON c.card = swipe.card LEFT JOIN (SELECT c.id, c.title FROM cah.events AS c WHERE c.department_id = 13 AND (c.enddate <= '$end' AND c.startdate >= '$start') AND c.approved = 1 UNION SELECT m.id, m.name FROM music_fc.events AS m WHERE (m.time <= '$end' AND m.time >= '$start')) AS event_list ON event_list.id = swipe.event WHERE swipe.time >= '$start' AND swipe.time <= '$end' AND c.nid IS NOT NULL AND c.nid NOT LIKE 'jparker') AS csv ORDER BY csv.lname, csv.fname, csv.time ASC";
         }
 
 
@@ -569,7 +569,7 @@ if( !class_exists( 'MusicFCQueryLib' ) ) {
          */
         private function _card_lookup_by_nid( string $nid, ... $args ) : string {
 
-            return "SELECT pi.PERS_PRIMARY_FIRST_NAME AS fname, pi.PERS_PRIMARY_LAST_NAME AS lname, c.card FROM rds.cc_personal_dim AS pi LEFT JOIN music_fc.cards_10182019 AS c ON pi.PERS_NID = c.nid WHERE pi.PERS_NID = '$nid' LIMIT 1";
+            return "SELECT pi.PERS_PRIMARY_FIRST_NAME AS fname, pi.PERS_PRIMARY_LAST_NAME AS lname, c.card FROM rds.cc_personal_dim AS pi LEFT JOIN music_fc.cards AS c ON pi.PERS_NID = c.nid WHERE pi.PERS_NID = '$nid' LIMIT 1";
         }
     }
 }
